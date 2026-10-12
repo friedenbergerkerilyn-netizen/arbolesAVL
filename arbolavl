@@ -1,0 +1,133 @@
+
+class Nodo:
+    def __init__(self, valor):
+        self.valor = valor
+        self.izquierda = None
+        self.derecha = None
+        self.altura = 1
+
+
+class ArbolAVL:
+    # Calcular la altura de un nodo
+    def altura(self, nodo):
+        if nodo is None:
+            return 0
+        return nodo.altura
+
+    # Calcular el factor de equilibrio
+    def factor_equilibrio(self, nodo):
+        if nodo is None:
+            return 0
+        return self.altura(nodo.izquierda) - self.altura(nodo.derecha)
+
+    # Rotacion simple a la derecha (LL)
+    def rotacion_derecha(self, y):
+        x = y.izquierda
+        temporal = x.derecha
+
+        x.derecha = y
+        y.izquierda = temporal
+
+        y.altura = 1 + max(
+            self.altura(y.izquierda),
+            self.altura(y.derecha)
+        )
+        x.altura = 1 + max(
+            self.altura(x.izquierda),
+            self.altura(x.derecha)
+        )
+
+        return x
+
+    # Rotacion simple a la izquierda (RR)
+    def rotacion_izquierda(self, x):
+        y = x.derecha
+        temporal = y.izquierda
+
+        y.izquierda = x
+        x.derecha = temporal
+
+        x.altura = 1 + max(
+            self.altura(x.izquierda),
+            self.altura(x.derecha)
+        )
+        y.altura = 1 + max(
+            self.altura(y.izquierda),
+            self.altura(y.derecha)
+        )
+
+        return y
+
+    # Insertar un valor y balancear el arbol
+    def insertar(self, nodo, valor):
+        # Insercion normal de un BST
+        if nodo is None:
+            return Nodo(valor)
+
+        if valor < nodo.valor:
+            nodo.izquierda = self.insertar(
+                nodo.izquierda, valor
+            )
+        elif valor > nodo.valor:
+            nodo.derecha = self.insertar(
+                nodo.derecha, valor
+            )
+        else:
+            return nodo  # No se permiten duplicados
+
+        # Actualizar altura
+        nodo.altura = 1 + max(
+            self.altura(nodo.izquierda),
+            self.altura(nodo.derecha)
+        )
+
+        # Calcular factor de equilibrio
+        equilibrio = self.factor_equilibrio(nodo)
+
+        # Caso LL: izquierda - izquierda
+        if equilibrio > 1 and valor < nodo.izquierda.valor:
+            return self.rotacion_derecha(nodo)
+
+        # Caso RR: derecha - derecha
+        if equilibrio < -1 and valor > nodo.derecha.valor:
+            return self.rotacion_izquierda(nodo)
+
+        # Caso LR: izquierda - derecha
+        if equilibrio > 1 and valor > nodo.izquierda.valor:
+            nodo.izquierda = self.rotacion_izquierda(
+                nodo.izquierda
+            )
+            return self.rotacion_derecha(nodo)
+
+        # Caso RL: derecha - izquierda
+        if equilibrio < -1 and valor < nodo.derecha.valor:
+            nodo.derecha = self.rotacion_derecha(
+                nodo.derecha
+            )
+            return self.rotacion_izquierda(nodo)
+
+        return nodo
+
+    # Mostrar los valores en orden
+    def mostrar_en_orden(self, nodo):
+        if nodo is not None:
+            self.mostrar_en_orden(nodo.izquierda)
+            print(
+                f"Valor: {nodo.valor}, "
+                f"Altura: {nodo.altura}, "
+                f"Factor: {self.factor_equilibrio(nodo)}"
+            )
+            self.mostrar_en_orden(nodo.derecha)
+
+
+# Programa principal
+arbol = ArbolAVL()
+raiz = None
+
+valores = [10, 20, 30, 40, 50, 25]
+
+for valor in valores:
+    raiz = arbol.insertar(raiz, valor)
+
+print("Arbol AVL en orden:")
+arbol.mostrar_en_orden(raiz)
